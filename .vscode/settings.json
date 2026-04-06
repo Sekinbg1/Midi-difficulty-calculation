@@ -1,0 +1,20 @@
+{
+  // 启用终端Shell集成（Windows）
+  "terminal.integrated.shellIntegration.enabled": true,
+  
+  // 自动在新终端中启用Shell集成
+  "terminal.integrated.shellIntegration.decorationsEnabled": "both",
+  
+  // Windows特定设置 - 使用PowerShell作为默认终端
+  "terminal.integrated.defaultProfile.windows": "PowerShell",
+  
+  // 启用命令装饰和执行时间显示
+  "terminal.integrated.shellIntegration.commandDecoration": true,
+  
+  // 在终端标题中显示当前工作目录
+  "terminal.integrated.tabs.title": "${process}:${cwdFolder}",
+  
+  // 其他有用的终端设置
+  "terminal.integrated.scrollback": 10000,
+  "terminal.integrated.fontSize": 12
+}
