@@ -1,6 +1,4 @@
 # Midi-Difficulty-Calculation
-(注：此描述由“通义灵码”自动生成)
-
 MIDI难度计算
 　通过三个方面来计算MIDI难度，并遵循项目规范的各项原则。
 
