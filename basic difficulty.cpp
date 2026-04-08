@@ -900,50 +900,21 @@ public:
 	double calculateSoundDifficulty(const Sound& sound, double basicDifficulty, bool isFirstSound = false) {
 		if (sound.notes.empty()) return 0;
 		
-		double noteCountDifficulty = calculateNoteCountDifficulty(sound.notes.size());
-		double spanDifficulty = calculateSpanDifficulty(sound.notes);
-
 		// 如果是第一个音 (首音)
 		if (isFirstSound) {
-			// 第一个音的“基础难度”已经设为0，所以不需要考虑basicDifficulty
-			if (sound.isSingleNote()) {
-				// 第一个音为“单音”时：只有“音数难度”
-				return noteCountDifficulty;
-			}
-			else if (sound.isChord()) {
-				// 第一个音为“和弦”时：取“音数难度”和“跨度难度”的平均值
-				if (spanDifficulty > 0) {
-					// 有跨度的“和弦”：取两项平均值
-					return (noteCountDifficulty + spanDifficulty) / 2.0;
-				} else {
-					// 无跨度的“和弦”：只有“音数难度”，跟“单音”一样
-					return noteCountDifficulty;  // 理论上不会发生
-				}
-			}
+			// 第一个音的“基础难度”已经设为0
+			return 0;
 		}
 		// 如果不是第一个音 (后续音)
 		else {
-			// 单音 (单个音符)
-			if (sound.isSingleNote()) {
-				// 单音没有“跨度难度”，所以取“基础难度”和“音数难度”的平均值
-				return (basicDifficulty + noteCountDifficulty) / 2.0;
-			}
-			// 和弦 (多个音符)
-			else if (sound.isChord()) {
-				if (spanDifficulty > 0) {
-					// 有跨度的“和弦”：取三项平均值
-					return (basicDifficulty + noteCountDifficulty + spanDifficulty) / 3.0;
-				} else {
-					// 无跨度的“和弦”：取两项平均值，跟“单音”一样
-					return (basicDifficulty + noteCountDifficulty) / 2.0;  // 理论上不会发生
-				}
-			}
+			// 只考虑基础难度
+			return basicDifficulty;
 		}
 		return 0;
 	}
 
 	// 计算单个通道在指定数据中的难度
-	double calculateChannelDifficultyFromData(const vector<Sound>& channelSounds) {
+	double calculateChannelDifficulty(const vector<Sound>& channelSounds) {
 		// 检查通道是否有数据
 		if (channelSounds.empty()) {return 0;}
 
@@ -969,57 +940,22 @@ public:
 			totalDifficulty += soundDifficulty;
 		}
 
-		// 返回通道的平均难度 (总难度除以音的数量，再除以6还原为“真实”难度值)
-		return totalDifficulty / static_cast<double>(channelSounds.size()) / 6.0;
+		// 返回通道的平均难度 (总难度除以音的数量，不再除以6)
+		return totalDifficulty / static_cast<double>(channelSounds.size());
 	}
 
 	// 计算“基础难度” (基于“时间间隔”)
 	double calculateBasicDifficulty(double timeIntervalMs) {
-		// 公式：6000 / 时间间隔 (ms)
-		// 需要将100ms对应“十级难度”，所以用6000来除 (6倍放大)
+		// 公式：1000 / 时间间隔 (ms)
+		// 考虑到人的极限反应时间约为0.1s，遂将100ms对应“十级难度”，即用1000来除
 		if (timeIntervalMs <= 0) return 0;
-		return 6000.0 / timeIntervalMs;  // 时间间隔越短 (演奏速度越快)，难度越大
-	}
-
-	// 计算“音数难度”
-	double calculateNoteCountDifficulty(int noteCount) {
-		// 1个音符难度为2, 5个音符难度为10 (原始难度)
-		// 1个音符难度为12, 5个音符难度为60 (6倍放大)
-		return noteCount * 12;
-	}
-
-	// 计算“跨度难度”
-	double calculateSpanDifficulty(const vector<Note>& notes) {
-		// 1个半音难度为5/6, 12个半音 (一个八度) 难度为10
-		// 1个半音难度为5, 12个半音 (一个八度) 难度为60 (6倍放大)
-
-		// 如果没有音符或仅由一个音符构成的音 (单音), 跨度难度为0
-		if (notes.empty() || notes.size() == 1) return 0;
-
-		// 找出“根音”和“冠音”
-		int minNote = notes[0].noteNumber;
-		int maxNote = notes[0].noteNumber;
-
-		for (const auto& note : notes) {
-			minNote = min(minNote, note.noteNumber);
-			maxNote = max(maxNote, note.noteNumber);
-		}
-
-		int span = maxNote - minNote;
-		// 跨度难度 = 音程跨度 * 5 (6倍放大)
-		return span * 5;
-	}
-
-	// 计算单个通道的难度
-	double calculateChannelDifficulty(int channelIndex) {
-		// 实现通道难度计算逻辑
-		return 0;
+		return 1000.0 / timeIntervalMs;  // 时间间隔越短 (演奏速度越快)，难度越大
 	}
 
 	// 计算单个音轨的难度
 	double calculateTrackDifficulty(const vector<Sound>& trackChannel) {
 		// 直接调用通道难度计算函数
-		return calculateChannelDifficultyFromData(trackChannel);
+		return calculateChannelDifficulty(trackChannel);
 	}
 
 	// 计算整体难度 (按乐器和通道显示，支持钢琴多音轨)
@@ -1029,22 +965,46 @@ public:
 		cout << "\n各通道难度计算:" << endl;
 		cout << "========================" << endl;
 
-		// 首先确定每个通道的最终乐器
-		vector<int> channelFinalInstruments(16, 0);
+		// 收集所有有效的通道数据
+		vector<vector<Sound>> allValidChannels;
 		for (const auto& track : allTracks) {
-		 for (int channel = 0; channel < 16; ++channel) {
-			 // 使用最后一个非零的乐器设置，或者如果一直是0但有数据则保持为0
-			 if (track.channelInstruments[channel] != 0 || isTrackChannelValid(track.channels[channel])) {
-				 channelFinalInstruments[channel] = track.channelInstruments[channel];
-			 }
-		 }
-	 }
+			for (int channel = 0; channel < 16; ++channel) {
+				if (track.isChannelValid(channel)) {
+					allValidChannels.push_back(track.channels[channel]);
+				}
+			}
+		}
 
-	 double totalDifficulty = 0;  // 总难度
-	 int validChannelCount = 0;   // 有效通道计数
+		if (allValidChannels.empty()) {
+			cout << "没有有效的音轨数据。" << endl;
+			return 0;
+		}
 
-	 // 为每个通道处理数据
-	 for (int channel = 0; channel < 16; ++channel) {
+		// 如果只有一个有效通道，直接计算其难度
+		if (allValidChannels.size() == 1) {
+			 double channelDifficulty = calculateChannelDifficulty(allValidChannels[0]);
+			 cout << "单一通道难度: " << channelDifficulty << endl;
+			 return channelDifficulty;
+		}
+
+		// 确定每个通道的最终乐器
+		vector<int> channelFinalInstruments(16, 0); // 默认都是钢琴(0)
+		for (int channel = 0; channel < 16; ++channel) {
+			// 从最后一个音轨开始查找，找到第一个设置了乐器的音轨
+			for (int trackIdx = static_cast<int>(allTracks.size()) - 1; trackIdx >= 0; --trackIdx) {
+				if (allTracks[trackIdx].channelInstruments[channel] != 0 || 
+					!allTracks[trackIdx].channels[channel].empty()) {
+					channelFinalInstruments[channel] = allTracks[trackIdx].channelInstruments[channel];
+					break;
+				}
+			}
+		}
+
+		double totalDifficulty = 0;  // 总难度
+		int validChannelCount = 0;   // 有效通道计数
+
+		// 为每个通道处理数据
+		for (int channel = 0; channel < 16; ++channel) {
 		 // 收集该通道在所有音轨中的有效数据
 		 vector<vector<Sound>> validTrackChannels;
 		 vector<int> validTrackIndices;  // 记录对应的音轨索引用于显示
@@ -1096,7 +1056,7 @@ public:
 		 }
 		 else {
 			 // 单音轨情况，直接计算该通道的难度
-			 double channelDifficulty = calculateChannelDifficultyFromData(validTrackChannels[0]);
+			 double channelDifficulty = calculateChannelDifficulty(validTrackChannels[0]);
 			 cout << "通道 " << channel + 1 << ": " << channelFinalInstruments[channel] + 1 
 				 << ". " << getInstrumentName(channelFinalInstruments[channel]) 
 				 << "，难度: " << fixed << setprecision(2) << channelDifficulty;
