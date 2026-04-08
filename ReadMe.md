@@ -1,4 +1,4 @@
-# Midi-Difficulty-Calculation
+# Midi Difficulty Calculation
 MIDI难度计算
 　通过三个方面来计算MIDI难度，并遵循项目规范的各项原则。
 
