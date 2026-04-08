@@ -940,7 +940,7 @@ public:
 			totalDifficulty += soundDifficulty;
 		}
 
-		// 返回通道的平均难度 (总难度除以音的数量，不再除以6)
+		// 返回通道的平均难度 (总难度除以“音”的总数)
 		return totalDifficulty / static_cast<double>(channelSounds.size());
 	}
 
