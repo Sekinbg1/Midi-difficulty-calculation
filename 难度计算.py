@@ -3,7 +3,7 @@ from collections import defaultdict
 
 def judge_midi_difficulty(midi_path: str) -> dict:
     """
-    输入 MIDI 路径，返回难度评分与各项指标
+    输入MIDI路径，返回难度评分与各项指标
     难度总分：0~100 → 映射为 1~10 星
     """
     mid = mido.MidiFile(midi_path)
@@ -12,7 +12,7 @@ def judge_midi_difficulty(midi_path: str) -> dict:
     # 收集所有音符事件 (note_on, velocity>0)
     notes = []
     total_ticks = 0
-    tempo = 500000  # 默认 120BPM
+    tempo = 500000  # 默认120BPM
 
     for track in mid.tracks:
         track_ticks = 0
@@ -32,7 +32,7 @@ def judge_midi_difficulty(midi_path: str) -> dict:
     if not notes:
         return {'score': 0, 'level': 1, 'info': '空MIDI'}
 
-    # 时长（秒）
+    # 时长 (秒)
     duration_sec = mido.tick2second(total_ticks, ticks_per_beat, tempo)
     duration_sec = max(duration_sec, 1)
 
@@ -46,7 +46,7 @@ def judge_midi_difficulty(midi_path: str) -> dict:
     pitch_max = max(pitches)
     pitch_range = pitch_max - pitch_min
 
-    # 左右手分离（简单用 channel 0/1 近似）
+    # 左右手分离 (简单用channel 0/1近似)
     ch0 = [n for n in notes if n['channel'] == 0]
     ch1 = [n for n in notes if n['channel'] == 1]
     hand_range = 0
@@ -55,14 +55,14 @@ def judge_midi_difficulty(midi_path: str) -> dict:
         p1 = [n['note'] for n in ch1]
         hand_range = abs(max(p0) - min(p1))
 
-    # 和弦密度（同一时间多个音符）
+    # 和弦密度 (同一时间多个音符)
     time_notes = defaultdict(int)
     for n in notes:
         time_notes[round(n['time'] / 10)] += 1
     chord_count = sum(1 for t, c in time_notes.items() if c >= 3)
     chord_density = chord_count / duration_sec
 
-    # 连续快速音（间隔 < 100ms）
+    # 连续快速音 (间隔 < 100ms)
     notes_sorted = sorted(notes, key=lambda x: x['time'])
     fast_run_count = 0
     for i in range(1, len(notes_sorted)):
@@ -73,7 +73,7 @@ def judge_midi_difficulty(midi_path: str) -> dict:
             fast_run_count += 1
     fast_density = fast_run_count / duration_sec
 
-    # ===== 难度打分（0~100）=====
+    # ===== 难度打分 (0~100) =====
     score = 0
     score += min(note_density * 2, 30)
     score += min(pitch_range / 10, 20)
@@ -82,7 +82,7 @@ def judge_midi_difficulty(midi_path: str) -> dict:
     score += min(fast_density * 3, 15)
     score = min(round(score, 1), 100)
 
-    # 星级 1~10
+    # 星级1~10
     level = max(1, min(10, round(score / 10)))
 
     return {
@@ -98,7 +98,7 @@ def judge_midi_difficulty(midi_path: str) -> dict:
     }
 
 if __name__ == '__main__':
-    # 替换成你的 MIDI 文件路径
+    # 替换成你的MIDI文件路径
     midi_file = 'test.mid'
     result = judge_midi_difficulty(midi_file)
     for k, v in result.items():

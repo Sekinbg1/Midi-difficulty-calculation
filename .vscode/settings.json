@@ -16,5 +16,8 @@
   
   // 其他有用的终端设置
   "terminal.integrated.scrollback": 10000,
-  "terminal.integrated.fontSize": 12
+  "terminal.integrated.fontSize": 12,
+  "workbench.colorTheme": "Dark Modern",
+  "window.autoDetectColorScheme": false,
+  "workbench.preferredLightColorTheme": "Light 2026"
 }
