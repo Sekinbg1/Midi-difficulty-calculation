@@ -1,4 +1,4 @@
-// #pragma execution_character_set("utf-8")  // 预设编译时，字符集为UTF-8 BOM编码，确保中文字符正确显示
+﻿// #pragma execution_character_set("utf-8")  // 预设编译时，字符集为UTF-8 BOM编码，确保中文字符正确显示
 #define NOMINMAX  // 禁用Windows头文件中的min和max宏定义，避免与标准库的std::min和std::max冲突
 #include <iostream>     // 输入输出流
 #include <vector>       // 向量容器
@@ -424,7 +424,7 @@ public:
 		int totalChords = 0;
 		int totalSingleNotes = 0;  // 总单音数
 
-		cout << "\n=== 通道详细信息 ===" << endl;
+		cout << "\n===== 通道详细信息 =====" << endl;
 
 		// 统计所有音轨中每个通道的数据
 		for (int channel = 0; channel < 16; ++channel) {
@@ -453,7 +453,7 @@ public:
 			}
 		}
 
-		cout << "\n=== 统计结果 ===" << endl;
+		cout << "\n===== 统计结果 =====" << endl;
 		cout << "总通道数 (含音符): " << validChannels << endl;
 		cout << "总音轨数: " << allTracks.size() << endl;
 		cout << "总单音数: " << totalSingleNotes << endl;
@@ -944,7 +944,7 @@ public:
 			return 0;
 		}
 
-		cout << "\n=== 各通道难度计算 (标准) ===" << endl;
+		cout << "\n===== 各通道难度计算 (标准) =====" << endl;
 
 		// 收集所有有效的通道数据
 		vector<vector<Sound>> allValidChannels;
@@ -1038,10 +1038,10 @@ public:
 				// 计算所有通道的平均难度 (标准)
 				channelAverageDifficulty = channelTotalDifficulty / validTrackChannels.size();
 
-				cout << "“通道 " << setw(2) << right << channel + 1 << "”的 总 难度 (标准): " 
-					<< setw(6) << fixed << setprecision(2) << channelTotalDifficulty << endl;
-				cout << "“通道 " << setw(2) << right << channel + 1 << "”的平均难度 (标准): " 
-					<< setw(6) << fixed << setprecision(2) << channelAverageDifficulty << endl;
+				cout << "“通道 " << setw(2) << right << channel + 1 
+					<< "”的 总 难度 (标准): " << setw(6) << fixed << setprecision(2) << channelTotalDifficulty << endl;
+				cout << "“通道 " << setw(2) << right << channel + 1 
+					<< "”的平均难度 (标准): " << setw(6) << fixed << setprecision(2) << channelAverageDifficulty << endl;
 
 				totalAverageDifficulty += channelAverageDifficulty;
 				totalDifficulty += channelTotalDifficulty;
@@ -1060,7 +1060,7 @@ public:
 			}
 		}
 
-		cout << "\n\n=== 最终难度结果 (标准) ===" << endl;
+		cout << "\n\n===== 最终难度结果 (标准) =====" << endl;
 
 		// 如果没有有效通道，则返回0
 		if (validChannelCount == 0) {
@@ -1087,7 +1087,7 @@ public:
 			return 0;
 		}
 
-		cout << "\n=== 各通道难度计算 (仅基础) ===" << endl;
+		cout << "\n===== 各通道难度计算 (仅基础) =====" << endl;
 
 		// 收集所有有效的通道数据
 		vector<vector<Sound>> allValidChannels;
@@ -1181,10 +1181,10 @@ public:
 				// 计算所有音轨的平均难度 (仅基础)
 				channelAverageDifficulty = channelTotalDifficulty / validTrackChannels.size();
 
-				cout << "“通道 " << setw(2) << right << channel + 1 << "”的 总 难度 (仅基础): " 
-					<< setw(6) << fixed << setprecision(2) << channelTotalDifficulty << endl;
-				cout << "“通道 " << setw(2) << right << channel + 1 << "”的平均难度 (仅基础): " 
-					<< setw(6) << fixed << setprecision(2) << channelAverageDifficulty << endl;
+				cout << "“通道 " << setw(2) << right << channel + 1 
+					<< "”的 总 难度 (仅基础): " << setw(6) << fixed << setprecision(2) << channelTotalDifficulty << endl;
+				cout << "“通道 " << setw(2) << right << channel + 1 
+					<< "”的平均难度 (仅基础): " << setw(6) << fixed << setprecision(2) << channelAverageDifficulty << endl;
 
 				totalAverageDifficulty += channelAverageDifficulty;
 				totalDifficulty += channelTotalDifficulty;
@@ -1203,7 +1203,7 @@ public:
 			}
 		}
 
-		cout << "\n\n=== 最终难度结果 (仅基础) ===" << endl;
+		cout << "\n\n===== 最终难度结果 (仅基础) =====" << endl;
 
 		// 如果没有有效通道，则返回0
 		if (validChannelCount == 0) {
@@ -1284,20 +1284,20 @@ int main() {
 	}
 
 	// 计算并显示难度结果 (标准)
-	cout << "\n=== 难度计算结果 (标准) ===" << endl;
+	cout << "\n===== 难度计算结果 (标准) =====" << endl;
 	double midiSumDifficulty;
 	double midiAverageDifficulty = calculator.calculateOverallDifficulty(midiSumDifficulty);
 
 	// 计算并显示难度结果（仅基础）
-	cout << "\n=== 难度计算结果 (仅基础) ===" << endl;
+	cout << "\n===== 难度计算结果 (仅基础) =====" << endl;
 	double basicOnlyMidiSumDifficulty;
 	double basicOnlyMidiAverageDifficulty = calculator.calculateBasicOnlyOverallDifficulty(basicOnlyMidiSumDifficulty);
 
 	// 最终结果汇总输出
 	cout << "\n\n===== 最终结果汇总 =====" << endl;
-	cout << "\nMIDI 总 难度  (标准) : " << setw(6) << fixed << setprecision(2) << midiSumDifficulty 
+	cout << "\nMIDI总难度  (标准) : " << setw(6) << fixed << setprecision(2) << midiSumDifficulty 
 		<< ", MIDI平均难度  (标准) : " << setw(6) << fixed << setprecision(2) << midiAverageDifficulty << endl;
-	cout << "MIDI 总 难度 (仅基础): " << setw(6) << fixed << setprecision(2) << basicOnlyMidiSumDifficulty 
+	cout << "MIDI总难度 (仅基础): " << setw(6) << fixed << setprecision(2) << basicOnlyMidiSumDifficulty 
 		<< ", MIDI平均难度 (仅基础): " << setw(6) << fixed << setprecision(2) << basicOnlyMidiAverageDifficulty << endl;
 
 	// MIDI平均难度等级判断 (标准)
