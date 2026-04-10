@@ -1296,9 +1296,9 @@ int main() {
 	// 最终结果汇总输出
 	cout << "\n\n===== 最终结果汇总 =====" << endl;
 	cout << "\nMIDI 总 难度  (标准) : " << setw(6) << fixed << setprecision(2) << midiSumDifficulty 
-		 << ", MIDI平均难度  (标准) : " << setw(6) << fixed << setprecision(2) << midiAverageDifficulty << endl;
+		<< ", MIDI平均难度  (标准) : " << setw(6) << fixed << setprecision(2) << midiAverageDifficulty << endl;
 	cout << "MIDI 总 难度 (仅基础): " << setw(6) << fixed << setprecision(2) << basicOnlyMidiSumDifficulty 
-		 << ", MIDI平均难度 (仅基础): " << setw(6) << fixed << setprecision(2) << basicOnlyMidiAverageDifficulty << endl;
+		<< ", MIDI平均难度 (仅基础): " << setw(6) << fixed << setprecision(2) << basicOnlyMidiAverageDifficulty << endl;
 
 	// MIDI平均难度等级判断 (标准)
 	cout << "\n平均难度等级  (标准) : ";
