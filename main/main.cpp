@@ -1,4 +1,4 @@
-﻿// #pragma execution_character_set("utf-8")  // 预设编译时，字符集为UTF-8 BOM编码，确保中文字符正确显示
+// #pragma execution_character_set("utf-8")  // 预设编译时，字符集为UTF-8 BOM编码，确保中文字符正确显示
 #define NOMINMAX  // 禁用Windows头文件中的min和max宏定义，避免与标准库的std::min和std::max冲突
 #include <iostream>     // 输入输出流
 #include <vector>       // 向量容器
@@ -176,10 +176,7 @@ public:
 				if (it != trackData.begin()) {
 					it--; // 回退一位
 					status = lastStatus;
-				}
-				else {
-					break;
-				}
+				} else {break;}
 			}
 			else {lastStatus = status;}
 
@@ -217,8 +214,7 @@ public:
 							newSound.startTime = timeInMs;
 							newSound.notes.push_back(newNote);
 							channels[currentChannel].push_back(newSound);
-						}
-						else {channels[currentChannel].back().notes.push_back(newNote);}
+						} else {channels[currentChannel].back().notes.push_back(newNote);}
 					}
 				}
 				break;
@@ -270,8 +266,7 @@ public:
 					unsigned int length = readVariableLength(it);
 					// 跳过SysEx数据
 					for (unsigned int i = 0; i < length && it != end; ++i) {++it;}
-				}
-				else {++it;}  // 其他系统信息
+				} else {++it;}  // 其他系统信息
 				break;
 			}
 			default:
@@ -605,8 +600,7 @@ public:
 					unsigned int length = readVariableLength(it);
 					// 跳过SysEx数据
 					for (unsigned int i = 0; i < length && it != end; ++i) {++it;}
-				}
-				else {++it;}  // 其他系统信息
+				} else {++it;}  // 其他系统信息
 				break;
 			}
 			default:break;}  // 未知事件类型，跳过处理
@@ -896,7 +890,7 @@ public:
 		}
 		// 如果不是第一个音 (后续音)
 		else {
-			// 只考虑基础难度 (注意：这里的“基础难度”已经是6倍放大的值)
+			// 只考虑基础难度
 			return basicDifficulty;
 		}
 		return 0;
