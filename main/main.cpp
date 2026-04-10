@@ -444,9 +444,11 @@ public:
 
 			// 判断通道是否有效
 			if (chordCount > 0 || singleNoteCount > 0 || noteCount > 0) {
-				cout << "通道 " << setw(2) << right << channel + 1 << ": 单音数: " << setw(2) << right << singleNoteCount 
-				<< ", 和弦数: " << setw(2) << right << chordCount << ", 音数: " << setw(2) << right << (singleNoteCount + chordCount) 
-				<< ", 音符数: " << setw(2) << right << noteCount << endl;
+				cout << "通道 " << setw(2) << right << channel + 1 
+					<< ": 单音数: " << setw(3) << right << singleNoteCount 
+					<< ", 和弦数: " << setw(2) << right << chordCount 
+					<< ", 音数: " << setw(3) << right << (singleNoteCount + chordCount) 
+					<< ", 音符数: " << setw(3) << right << noteCount << endl;
 				validChannels++;
 			}
 		}
@@ -794,7 +796,7 @@ public:
 		return (channelData.size() > 0 || noteCount > 0);
 	}
 
-	// 计算单个音的难度
+	// 计算单个音的难度 (标准)
 	double calculateSoundDifficulty(const Sound& sound, double basicDifficulty, bool isFirstSound = false) {
 		if (sound.notes.empty()) return 0;
 		
@@ -803,19 +805,19 @@ public:
 
 		// 如果是第一个音 (首音)
 		if (isFirstSound) {
-			// 第一个音的“基础难度”已经设为0，所以不需要考虑basicDifficulty
+			// 第一个音的基础难度恒为0，故无需考虑basicDifficulty
 			if (sound.isSingleNote()) {
-				// 第一个音为“单音”时：只有“音数难度”
+				// 第一个音为单音时：仅为音数难度 (恒为2，放大6倍后恒为12)
 				return noteCountDifficulty;
 			}
 			else if (sound.isChord()) {
-				// 第一个音为“和弦”时：取“音数难度”和“跨度难度”的平均值
+				// 第一个音为和弦时：取音数难度及跨度难度的平均值
 				if (spanDifficulty > 0) {
-					// 有跨度的“和弦”：取两项平均值
+					// 有跨度时：取两项平均值
 					return (noteCountDifficulty + spanDifficulty) / 2.0;
 				} else {
-					// 无跨度的“和弦”：只有“音数难度”，跟“单音”一样
-					return noteCountDifficulty;  // 理论上不会发生
+					// 无跨度时：只有音数难度，跟单音一样
+					return noteCountDifficulty;  // 基本不会发生
 				}
 			}
 		}
@@ -823,24 +825,24 @@ public:
 		else {
 			// 单音 (单个音符)
 			if (sound.isSingleNote()) {
-				// 单音没有“跨度难度”，所以取“基础难度”和“音数难度”的平均值
+				// 单音不存在跨度，取基础难度及音数难度的平均值
 				return (basicDifficulty + noteCountDifficulty) / 2.0;
 			}
 			// 和弦 (多个音符)
 			else if (sound.isChord()) {
 				if (spanDifficulty > 0) {
-					// 有跨度的“和弦”：取三项平均值
+					// 有跨度时：取三项平均值
 					return (basicDifficulty + noteCountDifficulty + spanDifficulty) / 3.0;
 				} else {
-					// 无跨度的“和弦”：取两项平均值，跟“单音”一样
-					return (basicDifficulty + noteCountDifficulty) / 2.0;  // 理论上不会发生
+					// 无跨度时：取两项平均值，跟单音一样
+					return (basicDifficulty + noteCountDifficulty) / 2.0;  // 基本不会发生
 				}
 			}
 		}
 		return 0;
 	}
 
-	// 计算单个通道在指定数据中的难度
+	// 计算单个通道的难度
 	double calculateChannelDifficulty(const vector<Sound>& channelSounds) {
 		// 检查通道是否有数据
 		if (channelSounds.empty()) {return 0;}
@@ -849,7 +851,7 @@ public:
 
 		// 处理第一个音 (首音)
 		if (!channelSounds.empty()) {
-			// 第一个音的基础难度为0，并标记为第一个音
+			// 第一个音的基础难度恒为0，且标记为第一个音
 			double firstSoundDifficulty = calculateSoundDifficulty(channelSounds[0], 0.0, true);
 			totalDifficulty += firstSoundDifficulty;
 		}
@@ -858,7 +860,7 @@ public:
 		for (size_t i = 1; i < channelSounds.size(); ++i) {
 			double timeInterval = channelSounds[i].startTime - channelSounds[i - 1].startTime;
 
-			// 只有时间间隔为正，才计算“基础难度”
+			// 只有时间间隔为正，才计算基础难度
 			double basicDifficulty = 0.0;
 			if (timeInterval > 0) {basicDifficulty = calculateBasicDifficulty(timeInterval);}
 			
@@ -867,14 +869,14 @@ public:
 			totalDifficulty += soundDifficulty;
 		}
 
-		// 返回通道的平均难度 (总难度除以“音”的总数，再除以6，还原为“真实”难度值)
+		// 返回通道的平均难度 (总难度除以音的总数后，再除以6，还原为真实难度值)
 		return totalDifficulty / static_cast<double>(channelSounds.size()) / 6.0;
 	}
 
-	// 计算“基础难度” (基于“时间间隔”)
+	// 计算基础难度 (基于时间间隔)
 	double calculateBasicDifficulty(double timeIntervalMs) {
 		// 公式：6000 / 时间间隔 (ms)
-		// 考虑到人的极限反应时间约为0.1s，遂将100ms对应“十级难度”，即用6000来除 (6倍放大)
+		// 考虑到人的极限反应时间约为0.1s，遂将100ms对应十级难度，故用6000来除 (6倍放大)
 		if (timeIntervalMs <= 0) return 0;
 		return 6000.0 / timeIntervalMs;  // 时间间隔越短 (演奏速度越快)，难度越大
 	}
@@ -885,18 +887,18 @@ public:
 		
 		// 如果是第一个音 (首音)
 		if (isFirstSound) {
-			// 第一个音的“基础难度”已经设为0
+			// 第一个音的基础难度恒为0
 			return 0;
 		}
 		// 如果不是第一个音 (后续音)
 		else {
-			// 只考虑基础难度
+			// 只计算基础难度
 			return basicDifficulty;
 		}
 		return 0;
 	}
 
-	// 计算单个通道在指定数据中的难度 (仅基础)
+	// 计算单个通道的难度 (仅基础)
 	double calculateBasicOnlyChannelDifficulty(const vector<Sound>& channelSounds) {
 		// 检查通道是否有数据
 		if (channelSounds.empty()) {return 0;}
@@ -905,7 +907,7 @@ public:
 
 		// 处理第一个音 (首音)
 		if (!channelSounds.empty()) {
-			// 将第一个音的“基础难度”设为0，并标记为第一个音
+			// 第一个音的基础难度恒为0，且标记为第一个音
 			double firstSoundDifficulty = calculateBasicOnlySoundDifficulty(channelSounds[0], 0.0, true);
 			totalDifficulty += firstSoundDifficulty;
 		}
@@ -914,9 +916,9 @@ public:
 		for (size_t i = 1; i < channelSounds.size(); ++i) {
 			double timeInterval = channelSounds[i].startTime - channelSounds[i - 1].startTime;
 
-			// 只有时间间隔为正，才计算“基础难度”
+			// 只有时间间隔为正，才计算基础难度
 			// 公式：1000 / 时间间隔 (ms)
-			// 考虑到人的极限反应时间约为0.1s，遂将100ms对应“十级难度”，即用1000来除
+			// 考虑到人的极限反应时间约为0.1s，遂将100ms对应十级难度，故用1000来除
 			double basicDifficulty = 0.0;
 			if (timeInterval > 0) {basicDifficulty = 1000.0 / timeInterval;}
 			
@@ -925,7 +927,7 @@ public:
 			totalDifficulty += soundDifficulty;
 		}
 
-		// 返回通道的平均难度 (总难度除以“音”的总数)
+		// 返回通道的平均难度 (总难度除以音的总数)
 		return totalDifficulty / static_cast<double>(channelSounds.size());
 	}
 
@@ -936,9 +938,9 @@ public:
 	}
 
 	// 计算整体难度 (标准) (按乐器和通道显示，支持钢琴多音轨)
-	double calculateOverallDifficulty(double& midiDifficulty) {
+	double calculateOverallDifficulty(double& midiSumDifficulty) {
 		if (allTracks.empty()) {
-			midiDifficulty = 0;
+			midiSumDifficulty = 0;
 			return 0;
 		}
 
@@ -956,7 +958,7 @@ public:
 
 		if (allValidChannels.empty()) {
 			cout << "没有有效的音轨数据。" << endl;
-			midiDifficulty = 0;
+			midiSumDifficulty = 0;
 			return 0;
 		}
 
@@ -965,7 +967,7 @@ public:
 			 double channelDifficulty = calculateChannelDifficulty(allValidChannels[0]);
 			 cout << "单一通道 总 难度 (标准): " << setw(6) << fixed << setprecision(2) << channelDifficulty << endl;
 			 cout << "单一通道平均难度 (标准): " << setw(6) << fixed << setprecision(2) << channelDifficulty << endl;
-			 midiDifficulty = channelDifficulty;
+			 midiSumDifficulty = channelDifficulty;
 			 return channelDifficulty;
 		}
 
@@ -982,7 +984,7 @@ public:
 			}
 		}
 
-		double totalSumDifficulty = 0;      // 总难度 (累加值)
+		double totalDifficulty = 0;      // 总难度 (用于计算MIDI总难度)
 		double totalAverageDifficulty = 0;  // 总平均难度 (用于计算MIDI平均难度)
 		int validChannelCount = 0;          // 有效通道计数
 
@@ -1009,9 +1011,9 @@ public:
 				cout << "通道 " << channel + 1 << ": " << channelFinalInstruments[channel] + 1 
 					<< ". " << getInstrumentName(channelFinalInstruments[channel]) << endl;
 
-				double channelTotalDifficulty = 0;    // 通道的总难度 (累加值)
+				double channelTotalDifficulty = 0;    // 通道的总难度
 				double channelAverageDifficulty = 0;  // 通道的平均难度
-				
+			
 				for (size_t i = 0; i < validTrackChannels.size(); ++i) {
 					// 计算当前音轨的难度 (标准)
 					double difficulty = calculateTrackDifficulty(validTrackChannels[i]);
@@ -1025,50 +1027,53 @@ public:
 						noteCount += sound.notes.size();
 					}
 
-					cout << "  “音轨 " << setw(2) << right << validTrackIndices[i] + 1 << "”难度 (标准): " << setw(6) << fixed << setprecision(2)
-						<< difficulty << " (单音数: " << setw(2) << right << singleNoteCount << "，和弦数: " << setw(2) << right << chordCount
-						<< "，音数: " << setw(2) << right << (singleNoteCount + chordCount) << "，音符数: " << setw(2) << right << noteCount << ")" << endl;
+					cout << "  “音轨 " << setw(2) << right << validTrackIndices[i] + 1 
+						<< "”难度 (标准): " << setw(6) << fixed << setprecision(2) << difficulty 
+						<< " (单音数: " << setw(2) << right << singleNoteCount 
+						<< "，和弦数: " << setw(2) << right << chordCount 
+						<< "，音数: " << setw(2) << right << (singleNoteCount + chordCount) 
+						<< "，音符数: " << setw(2) << right << noteCount << ")" << endl;
 				}
 
-				// 计算所有音轨的平均难度 (标准)
+				// 计算所有通道的平均难度 (标准)
 				channelAverageDifficulty = channelTotalDifficulty / validTrackChannels.size();
 
-				cout << "“通道 " << setw(2) << right << channel + 1 << "”的 总 难度 (标准): " << setw(6) << fixed << setprecision(2) 
-					<< channelTotalDifficulty << endl;
-				cout << "“通道 " << setw(2) << right << channel + 1 << "”的平均难度 (标准): " << setw(6) << fixed << setprecision(2) 
-					<< channelAverageDifficulty << endl;
+				cout << "“通道 " << setw(2) << right << channel + 1 << "”的 总 难度 (标准): " 
+					<< setw(6) << fixed << setprecision(2) << channelTotalDifficulty << endl;
+				cout << "“通道 " << setw(2) << right << channel + 1 << "”的平均难度 (标准): " 
+					<< setw(6) << fixed << setprecision(2) << channelAverageDifficulty << endl;
 
 				totalAverageDifficulty += channelAverageDifficulty;
-				totalSumDifficulty += channelTotalDifficulty;
-				validChannelCount++;  // 增加“有效通道”计数
+				totalDifficulty += channelTotalDifficulty;
+				validChannelCount++;  // 增加有效通道计数
 			} else {
 				// 单音轨情况，直接计算该通道的难度 (标准)
 				double channelDifficulty = calculateChannelDifficulty(validTrackChannels[0]);
 				cout << "通道 " << channel + 1 << ": " << channelFinalInstruments[channel] + 1 
-					<< ". " << getInstrumentName(channelFinalInstruments[channel]) 
-					<< "，总难度 (标准): " << setw(6) << fixed << setprecision(2) << channelDifficulty 
-					<< "，平均难度 (标准): " << setw(6) << fixed << setprecision(2) <<  channelDifficulty << endl;
+				<< ". " << getInstrumentName(channelFinalInstruments[channel]) 
+				<< "，总难度 (标准): " << setw(6) << fixed << setprecision(2) << channelDifficulty 
+				<< "，平均难度 (标准): " << setw(6) << fixed << setprecision(2) <<  channelDifficulty << endl;
 			 
 				totalAverageDifficulty += channelDifficulty;
-				totalSumDifficulty += channelDifficulty;
-				validChannelCount++;  // 增加“有效通道”计数
+				totalDifficulty += channelDifficulty;
+				validChannelCount++;  // 增加有效通道计数
 			}
 		}
 
 		cout << "\n\n=== 最终难度结果 (标准) ===" << endl;
 
-		// 如果没有“有效通道”，则返回0
+		// 如果没有有效通道，则返回0
 		if (validChannelCount == 0) {
 			cout << "没有有效通道，总难度 (标准): 0" << endl;
-			midiDifficulty = 0;
+			midiSumDifficulty = 0;
 			return 0;
 		}
 
-		// 计算MIDI难度和MIDI平均难度 (标准)
-		midiDifficulty = totalSumDifficulty;
+		// 计算MIDI总难度和MIDI平均难度 (标准)
+		midiSumDifficulty = totalDifficulty;
 		double midiAverageDifficulty = totalAverageDifficulty / validChannelCount;
 
-		cout << "\nMIDI    难度 (标准): " << setw(6) << fixed << setprecision(2) << midiDifficulty << endl;
+		cout << "\nMIDI 总 难度 (标准): " << setw(6) << fixed << setprecision(2) << midiSumDifficulty << endl;
 		cout << "MIDI平均难度 (标准): " << setw(6) << fixed << setprecision(2) << midiAverageDifficulty << endl;
 
 		// 返回MIDI平均难度 (标准)
@@ -1076,9 +1081,9 @@ public:
 	}
 
 	// 计算整体难度 (仅基础) (按乐器和通道显示，支持钢琴多音轨)
-	double calculateBasicOnlyOverallDifficulty(double& midiDifficulty) {
+	double calculateBasicOnlyOverallDifficulty(double& basicOnlyMidiSumDifficulty) {
 		if (allTracks.empty()) {
-			midiDifficulty = 0;
+			basicOnlyMidiSumDifficulty = 0;
 			return 0;
 		}
 
@@ -1096,7 +1101,7 @@ public:
 
 		if (allValidChannels.empty()) {
 			cout << "没有有效的音轨数据。" << endl;
-			midiDifficulty = 0;
+			basicOnlyMidiSumDifficulty = 0;
 			return 0;
 		}
 
@@ -1105,7 +1110,7 @@ public:
 			double channelDifficulty = calculateBasicOnlyChannelDifficulty(allValidChannels[0]);
 			cout << "单一通道 总 难度 (仅基础): " << setw(6) << fixed << setprecision(2) << channelDifficulty << endl;
 			cout << "单一通道平均难度 (仅基础): " << setw(6) << fixed << setprecision(2) << channelDifficulty << endl;
-			midiDifficulty = channelDifficulty;
+			basicOnlyMidiSumDifficulty = channelDifficulty;
 			return channelDifficulty;
 		}
 
@@ -1122,7 +1127,7 @@ public:
 			}
 		}
 
-		double totalSumDifficulty = 0;      // 总难度 (累加值)
+		double totalDifficulty = 0;      // 总难度 (用于计算MIDI总难度)
 		double totalAverageDifficulty = 0;  // 总平均难度 (用于计算MIDI平均难度)
 		int validChannelCount = 0;          // 有效通道计数
 
@@ -1149,7 +1154,7 @@ public:
 				cout << "通道 " << channel + 1 << ": " << channelFinalInstruments[channel] + 1 
 					<< ". " << getInstrumentName(channelFinalInstruments[channel]) << endl;
 
-				double channelTotalDifficulty = 0;    // 通道的总难度 (累加值)
+				double channelTotalDifficulty = 0;    // 通道的总难度
 				double channelAverageDifficulty = 0;  // 通道的平均难度
 
 				for (size_t i = 0; i < validTrackChannels.size(); ++i) {
@@ -1165,64 +1170,67 @@ public:
 						noteCount += sound.notes.size();
 					}
 
-					cout << "  “音轨 " << setw(2) << right << validTrackIndices[i] + 1 << "”难度 (仅基础): " << setw(6) << fixed << setprecision(2)
-						<< difficulty << " (单音数: " << setw(2) << right << singleNoteCount << "，和弦数: " << setw(2) << right << chordCount
-						<< "，音数: " << setw(2) << right << (singleNoteCount + chordCount) << "，音符数: " << setw(2) << right << noteCount << ")" << endl;
+					cout << "  “音轨 " << setw(2) << right << validTrackIndices[i] + 1 
+						<< "”难度 (仅基础): " << setw(6) << fixed << setprecision(2) << difficulty 
+						<< " (单音数: " << setw(2) << right << singleNoteCount 
+						<< "，和弦数: " << setw(2) << right << chordCount 
+						<< "，音数: " << setw(2) << right << (singleNoteCount + chordCount) 
+						<< "，音符数: " << setw(2) << right << noteCount << ")" << endl;
 				}
 
 				// 计算所有音轨的平均难度 (仅基础)
 				channelAverageDifficulty = channelTotalDifficulty / validTrackChannels.size();
 
-				cout << "“通道 " << setw(2) << right << channel + 1 << "”的 总 难度 (仅基础): " << setw(6) << fixed << setprecision(2)
-				 << channelTotalDifficulty << endl;
-				cout << "“通道 " << setw(2) << right << channel + 1 << "”的平均难度 (仅基础): " << setw(6) << fixed << setprecision(2)
-				 << channelAverageDifficulty << endl;
+				cout << "“通道 " << setw(2) << right << channel + 1 << "”的 总 难度 (仅基础): " 
+					<< setw(6) << fixed << setprecision(2) << channelTotalDifficulty << endl;
+				cout << "“通道 " << setw(2) << right << channel + 1 << "”的平均难度 (仅基础): " 
+					<< setw(6) << fixed << setprecision(2) << channelAverageDifficulty << endl;
 
 				totalAverageDifficulty += channelAverageDifficulty;
-				totalSumDifficulty += channelTotalDifficulty;
-				validChannelCount++;  // 增加“有效通道”计数
+				totalDifficulty += channelTotalDifficulty;
+				validChannelCount++;  // 增加有效通道计数
 			} else {
 				// 单音轨情况，直接计算该通道的难度 (仅基础)
 				double channelDifficulty = calculateBasicOnlyChannelDifficulty(validTrackChannels[0]);
 				cout << "通道 " << channel + 1 << ": " << channelFinalInstruments[channel] + 1 
-				<< ". " << getInstrumentName(channelFinalInstruments[channel]) 
-				<< "， 总 难度 (仅基础): " << setw(6) << fixed << setprecision(2) << channelDifficulty 
-				<< "，平均难度 (仅基础): " << setw(6) << fixed << setprecision(2) << channelDifficulty << endl;
+			<< ". " << getInstrumentName(channelFinalInstruments[channel]) 
+			<< "， 总 难度 (仅基础): " << setw(6) << fixed << setprecision(2) << channelDifficulty 
+			<< "，平均难度 (仅基础): " << setw(6) << fixed << setprecision(2) << channelDifficulty << endl;
 
 				totalAverageDifficulty += channelDifficulty;
-				totalSumDifficulty += channelDifficulty;
-				validChannelCount++;  // 增加“有效通道”计数
+				totalDifficulty += channelDifficulty;
+				validChannelCount++;  // 增加有效通道计数
 			}
 		}
 
 		cout << "\n\n=== 最终难度结果 (仅基础) ===" << endl;
 
-		// 如果没有“有效通道”，则返回0
+		// 如果没有有效通道，则返回0
 		if (validChannelCount == 0) {
 			cout << "没有有效通道，总难度 (仅基础): 0" << endl;
-			midiDifficulty = 0;
+			basicOnlyMidiSumDifficulty = 0;
 			return 0;
 		}
 
-		// 计算MIDI难度和MIDI平均难度 (仅基础)
-		midiDifficulty = totalSumDifficulty;
+		// 计算MIDI总难度和MIDI平均难度 (仅基础)
+		basicOnlyMidiSumDifficulty = totalDifficulty;
 		double midiAverageDifficulty = totalAverageDifficulty / validChannelCount;
 
-		cout << "\nMIDI    难度 (仅基础): " << setw(6) << fixed << setprecision(2) << midiDifficulty << endl;
+		cout << "\nMIDI 总 难度 (仅基础): " << setw(6) << fixed << setprecision(2) << basicOnlyMidiSumDifficulty << endl;
 		cout << "MIDI平均难度 (仅基础): " << setw(6) << fixed << setprecision(2) << midiAverageDifficulty << endl;
 
 		// 返回MIDI平均难度 (仅基础)
 		return midiAverageDifficulty;
 	}
 
-	// 计算“音数难度”
+	// 计算音数难度
 	double calculateNoteCountDifficulty(int noteCount) {
 		// 1个音符难度为2, 5个音符难度为10 (原始难度)
 		// 1个音符难度为12, 5个音符难度为60 (6倍放大)
 		return noteCount * 12;
 	}
 
-	// 计算“跨度难度”
+	// 计算跨度难度
 	double calculateSpanDifficulty(const vector<Note>& notes) {
 		// 1个半音难度为5/6, 12个半音 (一个八度) 难度为10
 		// 1个半音难度为5, 12个半音 (一个八度) 难度为60 (6倍放大)
@@ -1230,7 +1238,7 @@ public:
 		// 如果没有音符或仅由一个音符构成的音 (单音), 跨度难度为0
 		if (notes.empty() || notes.size() == 1) return 0;
 
-		// 找出“根音”和“冠音”
+		// 找出根音和冠音
 		int minNote = notes[0].noteNumber;
 		int maxNote = notes[0].noteNumber;
 
@@ -1277,19 +1285,19 @@ int main() {
 
 	// 计算并显示难度结果 (标准)
 	cout << "\n=== 难度计算结果 (标准) ===" << endl;
-	double midiDifficulty;
-	double midiAverageDifficulty = calculator.calculateOverallDifficulty(midiDifficulty);
+	double midiSumDifficulty;
+	double midiAverageDifficulty = calculator.calculateOverallDifficulty(midiSumDifficulty);
 
 	// 计算并显示难度结果（仅基础）
 	cout << "\n=== 难度计算结果 (仅基础) ===" << endl;
-	double basicOnlyMidiDifficulty;
-	double basicOnlyMidiAverageDifficulty = calculator.calculateBasicOnlyOverallDifficulty(basicOnlyMidiDifficulty);
+	double basicOnlyMidiSumDifficulty;
+	double basicOnlyMidiAverageDifficulty = calculator.calculateBasicOnlyOverallDifficulty(basicOnlyMidiSumDifficulty);
 
 	// 最终结果汇总输出
 	cout << "\n\n===== 最终结果汇总 =====" << endl;
-	cout << "\nMIDI难度  (标准) : " << setw(6) << fixed << setprecision(2) << midiDifficulty 
+	cout << "\nMIDI 总 难度  (标准) : " << setw(6) << fixed << setprecision(2) << midiSumDifficulty 
 		 << ", MIDI平均难度  (标准) : " << setw(6) << fixed << setprecision(2) << midiAverageDifficulty << endl;
-	cout << "MIDI难度 (仅基础): " << setw(6) << fixed << setprecision(2) << basicOnlyMidiDifficulty 
+	cout << "MIDI 总 难度 (仅基础): " << setw(6) << fixed << setprecision(2) << basicOnlyMidiSumDifficulty 
 		 << ", MIDI平均难度 (仅基础): " << setw(6) << fixed << setprecision(2) << basicOnlyMidiAverageDifficulty << endl;
 
 	// MIDI平均难度等级判断 (标准)
