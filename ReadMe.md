@@ -1,4 +1,4 @@
-# Midi-Difficulty-Calculation
+# MIDI-Difficulty-Calculation
 
 MIDI难度计算
 (注：以下描述均由“通义灵码”自动生成)
