@@ -413,7 +413,7 @@ public:
 			// 将当前音轨添加到所有音轨列表中
 			allTracks.push_back(currentTrack);
 
-			cout << "解析完“音轨 " << trackIndex + 1 << "”后，当前BPM: " << bpm << endl;
+			cout << "解析完“音轨 " << trackIndex + 1 << "”后，当前 BPM: " << bpm << endl;
 		}
 
 		fclose(file);
