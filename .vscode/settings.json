@@ -7,6 +7,11 @@
 
 	// Windows特定设置 - 使用Command Prompt作为默认终端
 	"terminal.integrated.defaultProfile.windows": "Command Prompt",
+	"terminal.integrated.profiles.windows": {
+		"Git Bash": {
+			"path": "C:\\Program Files\\Git\\bin\\bash.exe"
+		}
+	},
 
 	// 启用命令装饰和执行时间显示
 	"terminal.integrated.shellIntegration.commandDecoration": true,

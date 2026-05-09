@@ -326,7 +326,7 @@ public:
 
 		cout << "文件头长度: " << headerLength << endl;
 		cout << "MIDI格式: " << format << endl;
-		cout << "轨道数: " << trackCount << endl;
+		cout << "音轨数: " << trackCount << endl;
 		cout << "时间分割: " << division << endl;
 
 		// 检查division值
