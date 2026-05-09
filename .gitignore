@@ -1,0 +1,69 @@
+# Visual Studio files
+*.sdf
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.sln.ide
+*.vc.db
+*.vc.pch
+
+# Build output directories
+Debug/
+Release/
+x64/
+x86/
+*/Debug/
+*/Release/
+
+# Object files and libraries
+*.obj
+*.lib
+*.dll
+*.exe
+*.ilk
+*.pdb
+*.idb
+*.exp
+*.pch
+*.ipdb
+*.iobj
+
+# MSBuild temporary files
+*.tlog/
+**/*.tlog/
+
+# Visual Studio IntelliSense
+*.VC.db
+*.VC.VC.opendb
+
+# Precompiled headers
+*.gch
+
+# Log files
+*.log
+
+# VS Code workspace settings (optional - uncomment if you want to ignore)
+#.vscode/
+
+# JetBrains IDEs (IntelliJ, PyCharm, etc.)
+.idea/
+
+# Python bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+venv/
+ENV/
+env/
+
+# Temporary files
+*.tmp
+*.temp
+~$*
+
+# OS generated files
+.DS_Store
+Thumbs.db
